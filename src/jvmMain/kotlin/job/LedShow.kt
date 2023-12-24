@@ -23,10 +23,11 @@ object LedShow {
         return screen.connect(ip, port)
     }
 
-    suspend fun start() {
+    suspend fun start(call :(String)->Unit) {
         while (true) {
             delay(1000)
             val count = dao.getExistCount()
+            call("${count}")
             try {
                 //screen.turnOn()
                 val styles: List<DisplayStyleFactory.DisplayStyle> = DisplayStyleFactory.getStyles().toList()

@@ -46,7 +46,9 @@ fun App() {
             } else {
                 ledState = "连接失败"
             }
-            LedShow.start()
+            LedShow.start{
+                inCount=it
+            }
             webServerJob.join()
         }
         onDispose {
