@@ -16,7 +16,6 @@ import job.LedShow
 import job.WebServer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 
 @Composable
@@ -26,16 +25,22 @@ fun App() {
     var outCount by remember { mutableStateOf("X") }
     var ledState by remember { mutableStateOf("STATUS") }
     var ledErrorInfo by remember { mutableStateOf("") }
+    var runInfo by remember { mutableStateOf("") }
     var dao: DAO = DAOImpl
+    val coroutineScope = rememberCoroutineScope()
     // 启动后台任务
     DisposableEffect(Unit) {
-
-        val webServerJob = CoroutineScope(Dispatchers.Default).launch {
+        val webServerJob = coroutineScope.launch(Dispatchers.IO) {
+            runInfo = "初始化数据库"
             dao.setup()
-            WebServer().startServer()
+            runInfo = "开启服务"
+            WebServer().startServer {
+                runInfo = it
+            }
         }
 
-        val ledJob = CoroutineScope(Dispatchers.Default).launch {
+        val ledJob = coroutineScope.launch(Dispatchers.Default) {
+            ledState = "初始化连接"
             if (LedShow.setup()) {
                 ledState = "连接成功"
             } else {
@@ -74,6 +79,7 @@ fun App() {
                     Text(ledState, fontSize = 29.sp, color = Color.Red)
                 }
                 Text("$ledErrorInfo", fontSize = 29.sp)
+                Text("$runInfo", fontSize = 29.sp)
             }
 
         }

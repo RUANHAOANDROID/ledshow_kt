@@ -31,7 +31,12 @@ kotlin {
                 implementation("org.xerial:sqlite-jdbc:3.36.0.2")
                 implementation("io.ktor:ktor-server-content-negotiation:2.3.7")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
+                implementation("io.ktor:ktor-server-cors-jvm:2.3.7")
                 implementation("io.ktor:ktor-server-netty:2.3.7")
+                implementation ("ch.qos.logback:logback-classic:1.2.6")
+                implementation("io.ktor:ktor-server-core-jvm:2.3.7")
+                implementation("io.ktor:ktor-server-host-common-jvm:2.3.7")
+                implementation("io.ktor:ktor-server-status-pages-jvm:2.3.7")
                 implementation(compose.desktop.currentOs)
             }
         }
@@ -46,8 +51,10 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             fromFiles(project.fileTree("libs/") { include("**/*.jar") })
-            packageName = "demo"
-            packageVersion = "1.0.0"
+            packageName = "ledshow"
+            packageVersion = "1.0.7"
+            modules("java.sql")
+            //jvmArgs += "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
         }
     }
 }
