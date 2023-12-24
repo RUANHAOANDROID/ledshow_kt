@@ -6,13 +6,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Response<T>(
-
+    @SerialName("code")
+    val code: Int = 0,
     @SerialName("msg")
     val msg: String = "",
     @SerialName("data")
     @Contextual val data: T? = null,
-    @SerialName("code")
-    val code: Int = 0,
 )
 
 fun <T> RespSuccess(msg: String = "success", data: T? = null): Response<T> {

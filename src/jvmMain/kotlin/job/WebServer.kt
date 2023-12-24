@@ -18,7 +18,7 @@ import io.ktor.server.routing.*
 class WebServer {
     private var dao: DAO = DAOImpl
 
-    suspend fun startServer(port: Int = 8888) {
+    suspend fun startServer(port: Int = 8080) {
         embeddedServer(Netty, port) {
             install(ContentNegotiation) {
                 json()
@@ -28,22 +28,22 @@ class WebServer {
                     val deviceId = call.parameters["id"]
                     val inOutType = call.parameters["type"]?.toInt()
                     if (deviceId==null||inOutType==null){
-                        call.respond(RespError(msg = "参数错误"))
+                        call.respond(HttpStatusCode.InternalServerError,RespError(msg = "参数错误"))
                     }
                     dao.addCount(deviceId!!, inOutType!!)
-                    call.respond(RespSuccess())
+                    call.respond(HttpStatusCode.OK,RespSuccess())
                 }
                 get("/inCount") {
                     val inCount = dao.getInCount()
-                    call.respondText("$inCount", ContentType.Text.Html)
+                    call.respond(HttpStatusCode.OK,RespSuccess(data = inCount))
                 }
                 get("/outCount") {
                     val outCount = dao.getOutCount()
-                    call.respondText("$outCount", ContentType.Text.Html)
+                    call.respond(HttpStatusCode.OK,RespSuccess(data = outCount))
                 }
                 get("/existCount") {
                     val existCount = dao.getExistCount()
-                    call.respondText("$existCount", ContentType.Text.Html)
+                    call.respond(HttpStatusCode.OK,RespSuccess(data = existCount))
                 }
             }
         }.start(wait = true)
