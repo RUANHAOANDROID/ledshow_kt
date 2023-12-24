@@ -18,7 +18,9 @@ data class Response<T>(
 fun <T> RespSuccess(msg: String = "success", data: T? = null): Response<T> {
     return Response(code = 0, msg = msg, data = data)
 }
-
+fun RespSuccess(msg: String = "success"): Response<String> {
+    return Response(code = 0, msg = msg, data = null)
+}
 fun RespError(msg: String = "error", data: String? = null): Response<String> {
     return Response(code = 1, msg = msg, data = data)
 }

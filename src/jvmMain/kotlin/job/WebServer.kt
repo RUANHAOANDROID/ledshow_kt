@@ -1,5 +1,6 @@
 package job
 
+import com.typesafe.config.ConfigException.Null
 import data.db.DAO
 import data.db.DAOImpl
 import data.model.RespError
@@ -13,7 +14,6 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.json.Json
 
 class WebServer {
     private var dao: DAO = DAOImpl
@@ -31,7 +31,7 @@ class WebServer {
                         call.respond(RespError(msg = "参数错误"))
                     }
                     dao.addCount(deviceId!!, inOutType!!)
-                    call.respond(RespSuccess(data = "aaa"))
+                    call.respond(RespSuccess())
                 }
                 get("/inCount") {
                     val inCount = dao.getInCount()
