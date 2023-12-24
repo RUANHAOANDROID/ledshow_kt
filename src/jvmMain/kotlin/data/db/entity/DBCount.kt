@@ -1,23 +1,14 @@
 package data.db.entity
 
-import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.Column
 
 const val TypeIn = 0
 const val TypeOut = 1
-@Serializable
-data class CountModel(
-    val id: Int,
-    val day: String,
-    val count: Int,
-    val type: Int,
-    val deviceId: String
-)
-@Serializable
+
 object CountTable : IntIdTable("count_tab") {
     val day: Column<String> = varchar("day", 30)
     val deviceId: Column<String> = varchar("device_id", 50)

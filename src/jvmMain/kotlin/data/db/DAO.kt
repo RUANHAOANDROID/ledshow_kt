@@ -1,8 +1,6 @@
 package data.db
 
-import data.db.entity.CountModel
 import data.db.entity.CountTable
-import data.db.entity.DBCount
 
 interface DAO {
     suspend fun setup()

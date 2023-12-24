@@ -2,6 +2,9 @@ package job
 
 import data.db.DAO
 import data.db.DAOImpl
+import data.model.RespError
+import data.model.RespSuccess
+import data.model.Response
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -18,22 +21,17 @@ class WebServer {
     suspend fun startServer(port: Int = 8888) {
         embeddedServer(Netty, port) {
             install(ContentNegotiation) {
-                json(Json {
-                    useArrayPolymorphism =true
-                    allowStructuredMapKeys =true
-                    prettyPrint=true
-                    isLenient=true
-                })
+                json()
             }
             routing {
                 get("/passGate/{id}/{type}") {
                     val deviceId = call.parameters["id"]
                     val inOutType = call.parameters["type"]?.toInt()
                     if (deviceId==null||inOutType==null){
-                        call.respondText("Hello, world!", ContentType.Text.Html)
+                        call.respond(RespError(msg = "参数错误"))
                     }
                     dao.addCount(deviceId!!, inOutType!!)
-                    call.respondText("Hello, world!", ContentType.Text.Html)
+                    call.respond(RespSuccess(data = "aaa"))
                 }
                 get("/inCount") {
                     val inCount = dao.getInCount()
