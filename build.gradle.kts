@@ -28,6 +28,8 @@ kotlin {
                 implementation("org.jetbrains.exposed:exposed-dao:0.34.1")
                 implementation("org.jetbrains.exposed:exposed-jdbc:0.34.1")
                 implementation("org.xerial:sqlite-jdbc:3.36.0.2")
+                implementation("io.ktor:ktor-server-content-negotiation:2.3.7")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
                 implementation("io.ktor:ktor-server-netty:2.3.7")
                 implementation(compose.desktop.currentOs)
             }
