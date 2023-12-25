@@ -23,11 +23,11 @@ object LedShow {
         return screen.connect(ip, port)
     }
 
-    suspend fun start(call :(String)->Unit) {
+    suspend fun start(countCall :(String)->Unit,errCall:(String)->Unit) {
         while (true) {
             delay(1000)
             val count = dao.getExistCount()
-            call("${count}")
+            countCall("${count}")
             try {
                 //screen.turnOn()
                 val styles: List<DisplayStyleFactory.DisplayStyle> = DisplayStyleFactory.getStyles().toList()
@@ -45,7 +45,8 @@ object LedShow {
 //                    screen.turnOff()
 //                    screen.disconnect()
             } catch (e: Exception) {
-                throw RuntimeException(e)
+                e.printStackTrace()
+                errCall(e.message.toString())
             }
         }
     }

@@ -42,7 +42,10 @@ class WebServer {
             routing {
                 get("/ping") {
                     callInfo("Ping")
-                    call.respond(RespSuccess())
+                    call.respond(RespSuccess(data = "pong"))
+                }
+                get("/canEnter"){
+                    call.respond(HttpStatusCode.OK, RespSuccess(data = true))
                 }
                 get("/passGate/{id}/{type}") {
                     val deviceId = call.parameters["id"]

@@ -40,14 +40,20 @@ fun App() {
         }
 
         val ledJob = coroutineScope.launch(Dispatchers.Default) {
-            ledState = "初始化连接"
-            if (LedShow.setup()) {
-                ledState = "连接成功"
-            } else {
-                ledState = "连接失败"
-            }
-            LedShow.start{
-                inCount=it
+            runCatching {
+                ledState = "初始化连接"
+                if (LedShow.setup()) {
+                    ledState = "连接成功"
+                    LedShow.start(countCall = {
+                        inCount = it
+                    }, errCall = {
+                        ledState = it
+                    })
+                } else {
+                    ledState = "连接失败"
+                }
+            }.onFailure {
+                ledState = "发生异常: ${it.localizedMessage}"
             }
             webServerJob.join()
         }
