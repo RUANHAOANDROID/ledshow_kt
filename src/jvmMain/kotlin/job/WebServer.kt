@@ -24,7 +24,7 @@ class WebServer {
 
     suspend fun startServer(port: Int = 8080, callInfo: (String) -> Unit) {
         callInfo("startServer $port")
-        embeddedServer(Netty, host ="localhost" , port = port) {
+        embeddedServer(Netty , port) {
             callInfo("添加JSON序列化")
             install(ContentNegotiation) {
                 json()
@@ -45,6 +45,7 @@ class WebServer {
                     call.respond(RespSuccess(data = "pong"))
                 }
                 get("/canEnter"){
+                    callInfo("can enter ")
                     call.respond(HttpStatusCode.OK, RespSuccess(data = true))
                 }
                 get("/passGate/{id}/{type}") {
@@ -69,7 +70,7 @@ class WebServer {
                     val existCount = dao.getExistCount()
                     call.respond(HttpStatusCode.OK, RespSuccess(data = existCount))
                 }
-                callInfo("路由注册完毕")
+                callInfo("路由注册完毕,端口${port}")
             }
         }.start(wait = true)
     }

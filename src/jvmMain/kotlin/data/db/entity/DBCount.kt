@@ -24,3 +24,11 @@ class DBCount(id: EntityID<Int>) : IntEntity(id) {
     var count by CountTable.count
     var type by CountTable.type
 }
+
+object MaxCountTable : IntIdTable("max_tab") {
+    val max: Column<Int> = integer("max")
+}
+class DBMaxCount(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<DBCount>(CountTable)
+    var max by CountTable.day
+}

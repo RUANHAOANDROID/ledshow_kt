@@ -24,6 +24,9 @@ object DAOImpl : DAO {
             if (!SchemaUtils.checkCycle(CountTable)) {
                 SchemaUtils.create(CountTable)
             }
+            if (!SchemaUtils.checkCycle(MaxCountTable)) {
+                SchemaUtils.create(MaxCountTable)
+            }
         }
         db
     }
@@ -58,6 +61,24 @@ object DAOImpl : DAO {
                 }
             }
         }
+    }
+
+    override suspend fun setMaxCount(maxCount: Int) {
+        transaction {
+                exec("INSERT OR REPLACE INTO max_tab (id,max) VALUES (1,${maxCount})")
+        }
+    }
+
+    override suspend fun getMaxCount(): Int {
+        var maxCount =100000
+        transaction {
+            exec("SELECT max FROM max_tab WHERE id=1"){
+                if (it.next()){
+                    maxCount =it.getInt(1)
+                }
+            }
+        }
+        return  maxCount
     }
 
     override suspend fun getInCount(): Int {
