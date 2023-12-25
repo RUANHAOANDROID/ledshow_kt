@@ -46,6 +46,11 @@ class WebServer {
                 }
                 get("/canEnter"){
                     callInfo("can enter ")
+                    val maxCount =dao.getMaxCount()
+                    val existsCount  =dao.getExistCount()
+                    if (existsCount>=maxCount){
+                        call.respond(HttpStatusCode.OK, RespSuccess(data = false))
+                    }
                     call.respond(HttpStatusCode.OK, RespSuccess(data = true))
                 }
                 get("/passGate/{id}/{type}") {

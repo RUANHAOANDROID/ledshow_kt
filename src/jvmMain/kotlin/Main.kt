@@ -1,6 +1,7 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -24,7 +25,7 @@ import kotlinx.coroutines.launch
 @Composable
 @Preview
 fun App() {
-    var maxCount by remember {  mutableStateOf("100000")}
+    var maxCount by remember { mutableStateOf("100000") }
     var existsCount by remember { mutableStateOf("X") }
     var outCount by remember { mutableStateOf("X") }
     var ledState by remember { mutableStateOf("STATUS") }
@@ -37,7 +38,7 @@ fun App() {
         val webServerJob = coroutineScope.launch(Dispatchers.IO) {
             runInfo = "初始化数据库"
             dao.setup()
-            maxCount=dao.getMaxCount().toString()
+            maxCount = dao.getMaxCount().toString()
             runInfo = "开启服务"
             WebServer().startServer {
                 runInfo = it
@@ -80,11 +81,13 @@ fun App() {
 //                    Text("人", fontSize = 29.sp)
 //                }
                 Text("限定最大在园人数:", fontSize = 29.sp)
-                TextField(maxCount, onValueChange = {input ->
-                    coroutineScope.launch (Dispatchers.IO){
-                        dao.setMaxCount(maxCount.toInt())
+                OutlinedTextField(maxCount, onValueChange = { input ->
+                    maxCount = input
+                    maxCount.trim().toIntOrNull()?.let {
+                        coroutineScope.launch(Dispatchers.IO) {
+                            dao.setMaxCount(it)
+                        }
                     }
-                    maxCount=input
                 })
                 Spacer(modifier = Modifier.height(32.dp))
                 Row {
