@@ -45,13 +45,16 @@ class WebServer {
                     call.respond(RespSuccess(data = "pong"))
                 }
                 get("/canEnter"){
-                    callInfo("can enter ")
+
                     val maxCount =dao.getMaxCount()
                     val existsCount  =dao.getExistCount()
                     if (existsCount>=maxCount){
+                        callInfo("can enter NO!")
                         call.respond(HttpStatusCode.OK, RespSuccess(data = false))
+                    }else {
+                        callInfo("can enter YES! ")
+                        call.respond(HttpStatusCode.OK, RespSuccess(data = true))
                     }
-                    call.respond(HttpStatusCode.OK, RespSuccess(data = true))
                 }
                 get("/passGate/{id}/{type}") {
                     val deviceId = call.parameters["id"]
