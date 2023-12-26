@@ -25,7 +25,6 @@ fun App() {
     var maxCount by remember { mutableStateOf("100000") }
     var existsCount by remember { mutableStateOf("X") }
     var ledState by remember { mutableStateOf("STATUS") }
-    var ledErrorInfo by remember { mutableStateOf("") }
     var runInfo by remember { mutableStateOf("") }
     var ledAddress by remember { mutableStateOf("192.168.8.199") }
     var dao: DAO = DAOImpl
@@ -73,12 +72,7 @@ fun App() {
             contentAlignment = Alignment.Center
         ) {
             Column {
-//                Row {
-//                    Text("当前入园", fontSize = 29.sp)
-//                    Text(inCount, fontSize = 29.sp, color = Color.Red)
-//                    Text("人", fontSize = 29.sp)
-//                }
-                Text("限定最大在园人数:", fontSize = 29.sp)
+                Text("最大人数限定", fontSize = 28.sp)
                 OutlinedTextField(maxCount, onValueChange = { input ->
                     maxCount = input
                     maxCount.trim().toIntOrNull()?.let {
@@ -88,18 +82,13 @@ fun App() {
                     }
                 })
                 Spacer(modifier = Modifier.height(32.dp))
-                Row {
-                    Text("当前在园", fontSize = 29.sp)
-                    Text(existsCount, fontSize = 29.sp, color = Color.Red)
-                    Text("人", fontSize = 29.sp)
-                }
-                Spacer(modifier = Modifier.height(32.dp))
-                Text("LED:", fontSize = 32.sp)
+
+                Text("LED:", fontSize = 28.sp)
                 Row {
                     OutlinedTextField(ledAddress, onValueChange = { inputAddr ->
                         ledAddress = inputAddr
                     })
-                    Text(ledState, fontSize =28.sp, color = Color.Red)
+                    Text(ledState, fontSize =24.sp, color = Color.Red)
                 }
                 Button(onClick = {
                     if (ledAddress.isIpAddress()) {
@@ -112,8 +101,14 @@ fun App() {
                 }) {
                     Text("设定")
                 }
-                Text("$ledErrorInfo", fontSize = 29.sp)
-                Text("$runInfo", fontSize = 29.sp)
+                Spacer(modifier = Modifier.height(32.dp))
+                Row {
+                    Text("当前在园", fontSize = 24.sp)
+                    Text(existsCount, fontSize = 24.sp, color = Color.Red)
+                    Text("人", fontSize = 24.sp)
+                }
+                Spacer(modifier = Modifier.height(32.dp))
+                Text("$runInfo", fontSize = 24.sp)
             }
 
         }
