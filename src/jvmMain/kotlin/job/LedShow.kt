@@ -13,17 +13,18 @@ import onbon.bx06.utils.DisplayStyleFactory
 import java.awt.Font
 
 object LedShow {
-    private var inCount = "0"
-    private var outCount = "0"
-    private lateinit var screen: Bx6GScreenClient
     private val dao: DAO = DAOImpl
-    suspend fun setup(ip: String = "192.168.8.199", port: Int = 5005): Boolean {
+
+    private val screen by lazy {
         Bx6GEnv.initial()
-        screen = Bx6GScreenClient("MyScreen", Bx6M())
+        Bx6GScreenClient("MyScreen", Bx6M())
+    }
+
+    suspend fun setup(ip: String = "192.168.8.199", port: Int = 5005): Boolean {
         return screen.connect(ip, port)
     }
 
-    suspend fun start(countCall :(String)->Unit,errCall:(String)->Unit) {
+    suspend fun start(countCall: (String) -> Unit, errCall: (String) -> Unit) {
         while (true) {
             delay(1000)
             val count = dao.getExistCount()
@@ -41,6 +42,7 @@ object LedShow {
                 area.addPage(page)
                 pf.addArea(area)
                 screen.writeProgram(pf)
+                errCall("设定成功")
 //                    delay(1000)
 //                    screen.turnOff()
 //                    screen.disconnect()
