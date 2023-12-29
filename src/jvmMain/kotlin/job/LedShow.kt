@@ -26,6 +26,7 @@ object LedShow {
 
     suspend fun start(countCall: (String) -> Unit, errCall: (String) -> Unit) {
         while (true) {
+            //间歇1秒
             delay(1000)
             val count = dao.getExistCount()
             countCall("${count}")
