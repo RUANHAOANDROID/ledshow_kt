@@ -84,7 +84,7 @@ object DAOImpl : DAO {
     override suspend fun getInCount(): Int {
         var count = 0
         transaction(db) {
-            exec("SELECT SUM(c.count) FROM count_tab c WHERE c.type =${TypeIn}") {
+            exec("SELECT SUM(c.count) FROM count_tab c WHERE c.type =${TypeIn} and c.day=${TimeUtils.getToday()}") {
                 if (it.next()) {
                     count = it.getInt(1)
                 }
@@ -96,7 +96,7 @@ object DAOImpl : DAO {
     override suspend fun getOutCount(): Int {
         var count = 0
         transaction(db) {
-            exec("SELECT SUM(c.count) FROM count_tab c WHERE c.type =${TypeOut}") {
+            exec("SELECT SUM(c.count) FROM count_tab c WHERE c.type =${TypeOut} and c.day=${TimeUtils.getToday()}") {
                 if (it.next()) {
                     count = it.getInt(1)
                 }
