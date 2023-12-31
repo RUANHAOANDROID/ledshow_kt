@@ -47,14 +47,14 @@ fun App() {
                 ledState = "初始化连接"
                 if (LedShow.setup()) {
                     ledState = "连接成功"
-                    LedShow.start(countCall = {
-                        existsCount = it
-                    }, errCall = {
-                        ledState = it
-                    })
                 } else {
                     ledState = "连接失败"
                 }
+                LedShow.start(countCall = {
+                    existsCount = it
+                }, errCall = {
+                    ledState = it
+                })
             }.onFailure {
                 ledState = "发生异常: ${it.localizedMessage}"
             }

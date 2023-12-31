@@ -15,13 +15,15 @@ import java.awt.Font
 object LedShow {
     private val dao: DAO = DAOImpl
 
+    private var connected = false
     private val screen by lazy {
         Bx6GEnv.initial()
         Bx6GScreenClient("MyScreen", Bx6M())
     }
 
     suspend fun setup(ip: String = "192.168.8.199", port: Int = 5005): Boolean {
-        return screen.connect(ip, port)
+        connected = screen.connect(ip, port)
+        return connected
     }
 
     suspend fun start(countCall: (String) -> Unit, errCall: (String) -> Unit) {
@@ -30,27 +32,33 @@ object LedShow {
             delay(1000)
             val count = dao.getExistCount()
             countCall("${count}")
-            try {
-                //screen.turnOn()
-                val styles: List<DisplayStyleFactory.DisplayStyle> = DisplayStyleFactory.getStyles().toList()
-                val pf = ProgramBxFile("P000", screen.profile)
-                val area = TextCaptionBxArea(0, 0, 32, 16, screen.profile)
-                val page = TextBxPage("$count")
-//                    page.newLine("6688")
-//                    page.newLine("人")
-                page.font = Font("宋体", Font.PLAIN, 14)
-                page.displayStyle = styles[2]
-                area.addPage(page)
-                pf.addArea(area)
-                screen.writeProgram(pf)
-                errCall("设定成功")
-//                    delay(1000)
-//                    screen.turnOff()
-//                    screen.disconnect()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                errCall(e.message.toString())
+            if (connected){
+                setLedContent(count, errCall)
             }
+        }
+    }
+
+    private fun setLedContent(count: Int, errCall: (String) -> Unit) {
+        try {
+            //screen.turnOn()
+            val styles: List<DisplayStyleFactory.DisplayStyle> = DisplayStyleFactory.getStyles().toList()
+            val pf = ProgramBxFile("P000", screen.profile)
+            val area = TextCaptionBxArea(0, 0, 32, 16, screen.profile)
+            val page = TextBxPage("$count")
+    //                    page.newLine("6688")
+    //                    page.newLine("人")
+            page.font = Font("宋体", Font.PLAIN, 14)
+            page.displayStyle = styles[2]
+            area.addPage(page)
+            pf.addArea(area)
+            screen.writeProgram(pf)
+            errCall("设定成功")
+    //                    delay(1000)
+    //                    screen.turnOff()
+    //                    screen.disconnect()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            errCall(e.message.toString())
         }
     }
 
