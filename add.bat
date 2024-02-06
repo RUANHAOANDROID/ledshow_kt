@@ -8,6 +8,7 @@ echo Sending %REQUESTS% requests to %URL%...
 
 for /l %%i in (1, 1, %REQUESTS%) do (
     curl -s -o nul %URL%
+    echo request  %URL%
     ping -n 2 127.0.0.1 >nul
 )
 
