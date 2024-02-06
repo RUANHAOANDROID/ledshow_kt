@@ -37,6 +37,7 @@ kotlin {
                 implementation("io.ktor:ktor-server-core-jvm:2.3.7")
                 implementation("io.ktor:ktor-server-host-common-jvm:2.3.7")
                 implementation("io.ktor:ktor-server-status-pages-jvm:2.3.7")
+                implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
                 implementation(compose.desktop.currentOs)
             }
         }
@@ -52,7 +53,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             fromFiles(project.fileTree("libs/") { include("**/*.jar") })
             packageName = "ledshow"
-            packageVersion = "1.0.9"
+            packageVersion = "1.2.3"
             modules("java.sql")
             //jvmArgs += "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
         }

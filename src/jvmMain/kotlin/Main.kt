@@ -5,17 +5,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.EditProcessor
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import data.db.DAO
 import data.db.DAOImpl
+import data.model.LedParameters
 import job.LedShow
+import job.LedShow2
 import job.WebServer
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -24,11 +23,19 @@ import kotlinx.coroutines.launch
 fun App() {
     var maxCount by remember { mutableStateOf("100000") }
     var existsCount by remember { mutableStateOf("X") }
-    var ledState by remember { mutableStateOf("STATUS") }
+    var inCount by remember { mutableStateOf("X") }
+    var ledState1 by remember { mutableStateOf("STATUS") }
+    var ledState2 by remember { mutableStateOf("STATUS") }
     var runInfo by remember { mutableStateOf("") }
-    var ledAddress by remember { mutableStateOf("192.168.8.199") }
+    var ledAddress1 by remember { mutableStateOf("192.168.8.199") }
+    var ledAddress2 by remember { mutableStateOf("192.168.8.199") }
     var dao: DAO = DAOImpl
     val coroutineScope = rememberCoroutineScope()
+    val ledParameters1 by remember { mutableStateOf(LedParameters()) }
+    val ledParameters2 by remember { mutableStateOf(LedParameters()) }
+    var parameters = "x=?,y=?,w=?,h=?,fontSize=?"
+    val config by lazy { ConfigManager.loadConfig() }
+
     // 启动后台任务
     DisposableEffect(Unit) {
         val webServerJob = coroutineScope.launch(Dispatchers.IO) {
@@ -42,27 +49,48 @@ fun App() {
             }
         }
 
-        val ledJob = coroutineScope.launch(Dispatchers.Default) {
+        val ledJob1 = coroutineScope.launch(Dispatchers.Default) {
             runCatching {
-                ledState = "初始化连接"
+                ledState1 = "初始化连接"
                 if (LedShow.setup()) {
-                    ledState = "连接成功"
+                    ledState1 = "连接成功"
                 } else {
-                    ledState = "连接失败"
+                    ledState1 = "连接失败"
                 }
-                LedShow.start(countCall = {
-                    existsCount = it
+                LedShow.start(countCall = { e, i ->
+                    existsCount = e
+                    inCount = i
                 }, errCall = {
-                    ledState = it
+                    ledState1 = it
                 })
             }.onFailure {
-                ledState = "发生异常: ${it.localizedMessage}"
+                ledState1 = "发生异常: ${it.localizedMessage}"
+            }
+            webServerJob.join()
+        }
+        val ledJob2 = coroutineScope.launch(Dispatchers.Default) {
+            runCatching {
+                ledState2 = "初始化连接"
+                if (LedShow2.setup()) {
+                    ledState2 = "连接成功"
+                } else {
+                    ledState2 = "连接失败"
+                }
+                LedShow2.start(countCall = { e, i ->
+                    existsCount = e
+                    inCount = i
+                }, errCall = {
+                    ledState2 = it
+                })
+            }.onFailure {
+                ledState2 = "发生异常: ${it.localizedMessage}"
             }
             webServerJob.join()
         }
         onDispose {
             webServerJob.cancel()
-            ledJob.cancel()
+            ledJob1.cancel()
+            ledJob2.cancel()
         }
     }
 
@@ -80,28 +108,36 @@ fun App() {
                             dao.setMaxCount(it)
                         }
                     }
-                })
+                }, modifier = Modifier.width(150.dp))
                 Spacer(modifier = Modifier.height(32.dp))
-
-                Text("LED:", fontSize = 28.sp)
-                Row {
-                    OutlinedTextField(ledAddress, onValueChange = { inputAddr ->
-                        ledAddress = inputAddr
-                    })
-                    Text(ledState, fontSize =24.sp, color = Color.Red)
-                }
+                ledAddress1 = ledWidget("LED1:", ledState1, config.ledIp1)
+                ledAddress2 = ledWidget("LED2:",ledState2, config.ledIp2)
                 Button(onClick = {
-                    if (ledAddress.isIpAddress()) {
+                    if (ledAddress1.isIpAddress()) {
                         coroutineScope.launch(Dispatchers.IO) {
-                            LedShow.setup(ledAddress)
+                            LedShow.setParameters(ledParameters1)
+                            LedShow.setup(ledAddress1)
                         }
                     } else {
-                        ledState = "网络地址错误"
+                        ledState1 = "网络地址错误"
+                    }
+                    if (ledAddress2.isIpAddress()) {
+                        coroutineScope.launch(Dispatchers.IO) {
+                            LedShow2.setParameters(ledParameters2)
+                            LedShow2.setup(ledAddress2)
+                        }
+                    } else {
+                        ledState2 = "网络地址错误"
                     }
                 }) {
                     Text("设定")
                 }
                 Spacer(modifier = Modifier.height(32.dp))
+                Row {
+                    Text("今日接待", fontSize = 24.sp)
+                    Text(inCount, fontSize = 24.sp, color = Color.Red)
+                    Text("人", fontSize = 24.sp)
+                }
                 Row {
                     Text("当前在园", fontSize = 24.sp)
                     Text(existsCount, fontSize = 24.sp, color = Color.Red)
@@ -110,9 +146,28 @@ fun App() {
                 Spacer(modifier = Modifier.height(32.dp))
                 Text("$runInfo", fontSize = 24.sp)
             }
-
         }
     }
+}
+
+@Composable
+private fun ledWidget(
+    title: String,
+    ledState: String,
+    ledAddress: String,
+): String {
+    var ledAddress1 = ledAddress
+    Row {
+        Text("$title", fontSize = 28.sp)
+        Text(ledState, fontSize = 24.sp, color = Color.Red)
+    }
+    Row {
+        OutlinedTextField(ledAddress, onValueChange = { inputAddr ->
+            ledAddress1 = inputAddr
+        }, label = { Text("IP address") }, modifier = Modifier.width(150.dp))
+
+    }
+    return ledAddress1
 }
 
 fun main() = application {
