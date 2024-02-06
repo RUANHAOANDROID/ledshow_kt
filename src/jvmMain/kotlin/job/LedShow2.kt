@@ -13,8 +13,9 @@ import onbon.bx06.cmd.dyn.DynamicBxAreaRule
 import onbon.bx06.file.ProgramBxFile
 import onbon.bx06.series.Bx6M
 import onbon.bx06.utils.DisplayStyleFactory
+import java.awt.Font
 
-object LedShow {
+object LedShow2 {
     private val dao: DAO = DAOImpl
     private var connected = false
     private var ledParameters = LedParameters()
@@ -86,13 +87,27 @@ object LedShow {
                 ledParameters.x,
                 ledParameters.y,
                 ledParameters.width,
+                ledParameters.height/2,
+                screen.profile
+            )
+            val page = TextBxPage("实时园内${existCount}人")
+            area.addPage(page)
+            screen.writeDynamic(rule, area)
+            val rule2 = DynamicBxAreaRule().apply {
+                id = 0
+                immediatePlay = 1.toByte()
+                runMode = 0.toByte()
+            }
+            val area2 = DynamicBxArea(
+                ledParameters.x,
+                ledParameters.height/2,
+                ledParameters.width,
                 ledParameters.height,
                 screen.profile
             )
-            val page = TextBxPage("今日接待${inCount}人")
-            page.newLine("实时园内${existCount}人")
-            area.addPage(page)
-            screen.writeDynamic(rule, area)
+            val page2 = TextBxPage("今日接待${inCount}人")
+            area.addPage(page2)
+            screen.writeDynamic(rule2, area2)
         }.onSuccess {
             errCall("设定成功")
         }.onFailure {
