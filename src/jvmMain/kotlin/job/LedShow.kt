@@ -76,6 +76,44 @@ object LedShow {
         }
     }
 
+//    private fun showDynamicArea(inCount: Int, existCount: Int, errCall: (String) -> Unit) {
+//        runCatching {
+//            val rule = DynamicBxAreaRule()
+//            rule.id = 0
+//            rule.immediatePlay = 1.toByte()
+//            rule.runMode = 0.toByte()
+//            val area = DynamicBxArea(
+//                ledParameters.x,
+//                ledParameters.y,
+//                ledParameters.width,
+//                ledParameters.height / 2,
+//                screen.profile
+//            )
+//            val page = TextBxPage("今日接待${inCount}人")
+//            //page.newLine("实时园内${existCount}人")
+//            area.addPage(page)
+//            screen.writeDynamic(rule, area)
+//
+//            val rule2 = DynamicBxAreaRule()
+//            rule.id = 1
+//            rule.immediatePlay = 1.toByte()
+//            rule.runMode = 0.toByte()
+//            val area2 = DynamicBxArea(
+//                ledParameters.x,
+//                ledParameters.height / 2,
+//                ledParameters.width,
+//                ledParameters.height / 2,
+//                screen.profile
+//            )
+//            val page2 = TextBxPage("实时园内${existCount}人")
+//            area2.addPage(page2)
+//            screen.writeDynamic(rule2, area2)
+//        }.onSuccess {
+//            errCall("设定成功")
+//        }.onFailure {
+//            errCall("${it.message}")
+//        }
+//    }
     private fun showDynamicArea(inCount: Int, existCount: Int, errCall: (String) -> Unit) {
         runCatching {
             val rule = DynamicBxAreaRule()
