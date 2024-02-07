@@ -13,7 +13,6 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -57,15 +56,21 @@ class WebServer {
                 }
                 get("/passGate/{id}/{type}") {
                     mutex.withLock {
-                        delay(1000)
-                        val deviceId = call.parameters["id"]
-                        val inOutType = call.parameters["type"]?.toInt()
-                        callInfo("pass gate ${deviceId} ${inOutType}")
-                        if (deviceId == null || inOutType == null) {
-                            call.respond(HttpStatusCode.InternalServerError, RespError(msg = "参数错误"))
+                        val maxCount =dao.getMaxCount()
+                        val existsCount  =dao.getExistCount()
+                        if (existsCount>=maxCount){
+                            callInfo("can enter NO!")
+                            call.respond(HttpStatusCode.OK, RespError(msg = "园区人数超限！"))
+                        }else{
+                            val deviceId = call.parameters["id"]
+                            val inOutType = call.parameters["type"]?.toInt()
+                            callInfo("pass gate ${deviceId} ${inOutType}")
+                            if (deviceId == null || inOutType == null) {
+                                call.respond(HttpStatusCode.InternalServerError, RespError(msg = "参数错误"))
+                            }
+                            dao.addCount(deviceId!!, inOutType!!)
+                            call.respond(HttpStatusCode.OK, RespSuccess())
                         }
-                        dao.addCount(deviceId!!, inOutType!!)
-                        call.respond(HttpStatusCode.OK, RespSuccess())
                     }
                 }
                 get("/inCount") {
