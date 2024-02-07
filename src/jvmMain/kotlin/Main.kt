@@ -27,8 +27,8 @@ fun App() {
     var ledState1 by remember { mutableStateOf("STATUS") }
     var ledState2 by remember { mutableStateOf("STATUS") }
     var runInfo by remember { mutableStateOf("") }
-    var ledAddress1 by remember { mutableStateOf("192.168.8.199") }
-    var ledAddress2 by remember { mutableStateOf("192.168.8.199") }
+    var ledAddress1 by remember { mutableStateOf("192.168.0.196") }
+    var ledAddress2 by remember { mutableStateOf("192.168.85.199") }
     var dao: DAO = DAOImpl
     val coroutineScope = rememberCoroutineScope()
     val ledParameters1 by remember { mutableStateOf(LedParameters()) }
@@ -52,7 +52,7 @@ fun App() {
         val ledJob1 = coroutineScope.launch(Dispatchers.Default) {
             runCatching {
                 ledState1 = "初始化连接"
-                if (LedShow.setup()) {
+                if (LedShow.setup(ledAddress1)) {
                     ledState1 = "连接成功"
                 } else {
                     ledState1 = "连接失败"
@@ -71,7 +71,7 @@ fun App() {
         val ledJob2 = coroutineScope.launch(Dispatchers.Default) {
             runCatching {
                 ledState2 = "初始化连接"
-                if (LedShow2.setup()) {
+                if (LedShow2.setup(ledAddress2)) {
                     ledState2 = "连接成功"
                 } else {
                     ledState2 = "连接失败"
