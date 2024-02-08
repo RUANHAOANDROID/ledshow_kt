@@ -101,14 +101,21 @@ fun App() {
         ) {
             Column {
                 Text("最大人数限定", fontSize = 28.sp)
-                OutlinedTextField(maxCount, onValueChange = { input ->
-                    maxCount = input
-                    maxCount.trim().toIntOrNull()?.let {
-                        coroutineScope.launch(Dispatchers.IO) {
-                            dao.setMaxCount(it)
+                Row {
+                    OutlinedTextField(maxCount, onValueChange = { input ->
+                        maxCount = input
+                    }, modifier = Modifier.width(150.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Button(onClick ={
+                        maxCount.trim().toIntOrNull()?.let {
+                            coroutineScope.launch(Dispatchers.IO) {
+                                dao.setMaxCount(it)
+                            }
                         }
+                    }){
+                        Text("设定")
                     }
-                }, modifier = Modifier.width(150.dp))
+                }
                 Spacer(modifier = Modifier.height(32.dp))
                 ledAddress1 = ledWidget("LED1:", ledState1, config.ledIp1)
                 ledAddress2 = ledWidget("LED2:",ledState2, config.ledIp2)
