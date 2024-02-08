@@ -10,4 +10,5 @@ object ConfigManager {
             return Json.decodeFromString(textJson)
         }
     }
+
 }
