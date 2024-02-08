@@ -27,7 +27,7 @@ fun App() {
     var ledState1 by remember { mutableStateOf("STATUS") }
     var ledState2 by remember { mutableStateOf("STATUS") }
     var runInfo by remember { mutableStateOf("") }
-    var ledAddress1 by remember { mutableStateOf("192.168.85.212") }
+    var ledAddress1 by remember { mutableStateOf("192.168.119.199") }
     var ledAddress2 by remember { mutableStateOf("192.168.85.199") }
     var dao: DAO = DAOImpl
     val coroutineScope = rememberCoroutineScope()
