@@ -27,7 +27,7 @@ fun App() {
     var ledState1 by remember { mutableStateOf("STATUS") }
     var ledState2 by remember { mutableStateOf("STATUS") }
     var runInfo by remember { mutableStateOf("") }
-    var ledAddress1 by remember { mutableStateOf("192.168.0.196") }
+    var ledAddress1 by remember { mutableStateOf("192.168.85.212") }
     var ledAddress2 by remember { mutableStateOf("192.168.85.199") }
     var dao: DAO = DAOImpl
     val coroutineScope = rememberCoroutineScope()
@@ -106,19 +106,38 @@ fun App() {
                         maxCount = input
                     }, modifier = Modifier.width(150.dp))
                     Spacer(modifier = Modifier.width(16.dp))
-                    Button(onClick ={
+                    Button(onClick = {
                         maxCount.trim().toIntOrNull()?.let {
                             coroutineScope.launch(Dispatchers.IO) {
                                 dao.setMaxCount(it)
                             }
                         }
-                    }){
+                    }) {
                         Text("设定")
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
-                ledAddress1 = ledWidget("LED1:", ledState1, config.ledIp1)
-                ledAddress2 = ledWidget("LED2:",ledState2, config.ledIp2)
+
+                Row {
+                    Text("${"LED1:"}", fontSize = 28.sp)
+                    Text(ledState1, fontSize = 24.sp, color = Color.Red)
+                }
+                Row {
+                    OutlinedTextField(ledAddress1, onValueChange = { inputAddr ->
+                        ledAddress1 = inputAddr
+                    }, label = { Text("IP address") }, modifier = Modifier.width(150.dp))
+
+                }
+                Row {
+                    Text("${"LED2:"}", fontSize = 28.sp)
+                    Text(ledState2, fontSize = 24.sp, color = Color.Red)
+                }
+                Row {
+                    OutlinedTextField(ledAddress2, onValueChange = { inputAddr ->
+                        ledAddress2 = inputAddr
+                    }, label = { Text("IP address") }, modifier = Modifier.width(150.dp))
+
+                }
                 Button(onClick = {
                     if (ledAddress1.isIpAddress()) {
                         coroutineScope.launch(Dispatchers.IO) {
@@ -155,26 +174,6 @@ fun App() {
             }
         }
     }
-}
-
-@Composable
-private fun ledWidget(
-    title: String,
-    ledState: String,
-    ledAddress: String,
-): String {
-    var ledAddress1 = ledAddress
-    Row {
-        Text("$title", fontSize = 28.sp)
-        Text(ledState, fontSize = 24.sp, color = Color.Red)
-    }
-    Row {
-        OutlinedTextField(ledAddress, onValueChange = { inputAddr ->
-            ledAddress1 = inputAddr
-        }, label = { Text("IP address") }, modifier = Modifier.width(150.dp))
-
-    }
-    return ledAddress1
 }
 
 fun main() = application {

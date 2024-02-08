@@ -55,15 +55,15 @@ class WebServer {
                     }
                 }
                 get("/passGate/{id}/{type}") {
+                    val deviceId = call.parameters["id"]
+                    val inOutType = call.parameters["type"]?.toInt()
                     mutex.withLock {
                         val maxCount =dao.getMaxCount()
                         val existsCount  =dao.getExistCount()
-                        if (existsCount>=maxCount){
+                        if ((inOutType==0)&&(existsCount>=maxCount)){
                             callInfo("can enter NO!")
                             call.respond(HttpStatusCode.OK, RespError(msg = "园区人数超限！"))
                         }else{
-                            val deviceId = call.parameters["id"]
-                            val inOutType = call.parameters["type"]?.toInt()
                             callInfo("pass gate ${deviceId} ${inOutType}")
                             if (deviceId == null || inOutType == null) {
                                 call.respond(HttpStatusCode.InternalServerError, RespError(msg = "参数错误"))
