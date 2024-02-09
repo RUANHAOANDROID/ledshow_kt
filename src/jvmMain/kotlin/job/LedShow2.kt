@@ -33,8 +33,10 @@ object LedShow2 {
         while (true) {
             //间歇1秒
             delay(1000)
-            val existCount = dao.getExistCount()
+            var existCount = dao.getExistCount()
             val inCount = dao.getInCount()
+            if (existCount<0)
+                existCount=0
             countCall("${existCount}", "${inCount}")
             if (connected) {
                 setLedContent(existCount, inCount, errCall)

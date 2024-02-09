@@ -27,8 +27,8 @@ fun App() {
     var ledState1 by remember { mutableStateOf("STATUS") }
     var ledState2 by remember { mutableStateOf("STATUS") }
     var runInfo by remember { mutableStateOf("") }
-    var ledAddress1 by remember { mutableStateOf("192.168.0.0") }
-    var ledAddress2 by remember { mutableStateOf("192.168.0.0") }
+    var ledAddress1 by remember { mutableStateOf("ipaddress") }
+    var ledAddress2 by remember { mutableStateOf("ipaddress") }
     var dao: DAO = DAOImpl
     val coroutineScope = rememberCoroutineScope()
     val ledParameters1 by remember { mutableStateOf(LedParameters()) }
@@ -134,13 +134,12 @@ fun App() {
                             coroutineScope.launch(Dispatchers.IO) {
                                 LedShow.setParameters(ledParameters1)
                                 LedShow.setup(ledAddress1)
-                                ConfigManager.saveConfig(config)
                             }
                         } else {
                             ledState1 = "网络地址错误"
                         }
                     }) {
-                        Text("设定LED1")
+                        Text("LED1重连")
                     }
                 }
 
@@ -158,14 +157,13 @@ fun App() {
                             coroutineScope.launch(Dispatchers.IO) {
                                 LedShow2.setParameters(ledParameters2)
                                 LedShow2.setup(ledAddress2)
-                                ConfigManager.saveConfig(config)
                             }
                         } else {
                             ledState2 = "网络地址错误"
                         }
 
                     }) {
-                        Text("设定LED2")
+                        Text("LED2重连")
                     }
                 }
 
