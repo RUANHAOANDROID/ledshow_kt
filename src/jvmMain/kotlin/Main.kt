@@ -33,12 +33,13 @@ fun App() {
     val coroutineScope = rememberCoroutineScope()
     val ledParameters1 by remember { mutableStateOf(LedParameters()) }
     val ledParameters2 by remember { mutableStateOf(LedParameters()) }
-    var parameters = "x=?,y=?,w=?,h=?,fontSize=?"
     val config by lazy { ConfigManager.loadConfig() }
 
     // 启动后台任务
     DisposableEffect(Unit) {
         val webServerJob = coroutineScope.launch(Dispatchers.IO) {
+            ledAddress1=config.ledIp1
+            ledAddress2=config.ledIp2
             runInfo = "初始化数据库"
             dao.setup()
             maxCount = dao.getMaxCount().toString()
@@ -113,22 +114,36 @@ fun App() {
                             }
                         }
                     }) {
-                        Text("设定")
+                        Text("设定限额")
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
-                var ledAddress1 = config.ledIp1
+
                 Row {
                     Text("${"LED1:"}", fontSize = 28.sp)
                     Text(ledState1, fontSize = 24.sp, color = Color.Red)
                 }
+
                 Row {
                     OutlinedTextField(ledAddress1, onValueChange = { inputAddr ->
                         ledAddress1 = inputAddr
-                    }, label = { Text("IP address") }, modifier = Modifier.width(150.dp))
-
+                    }, label = { Text("IP address") }, modifier = Modifier.width(180.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Button(onClick = {
+                        if (ledAddress1.isIpAddress()) {
+                            coroutineScope.launch(Dispatchers.IO) {
+                                LedShow.setParameters(ledParameters1)
+                                LedShow.setup(ledAddress1)
+                                ConfigManager.saveConfig(config)
+                            }
+                        } else {
+                            ledState1 = "网络地址错误"
+                        }
+                    }) {
+                        Text("设定LED1")
+                    }
                 }
-                var ledAddress2 = config.ledIp2
+
                 Row {
                     Text("${"LED2:"}", fontSize = 28.sp)
                     Text(ledState2, fontSize = 24.sp, color = Color.Red)
@@ -136,29 +151,24 @@ fun App() {
                 Row {
                     OutlinedTextField(ledAddress2, onValueChange = { inputAddr ->
                         ledAddress2 = inputAddr
-                    }, label = { Text("IP address") }, modifier = Modifier.width(150.dp))
+                    }, label = { Text("IP address") }, modifier = Modifier.width(180.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Button(onClick = {
+                        if (ledAddress2.isIpAddress()) {
+                            coroutineScope.launch(Dispatchers.IO) {
+                                LedShow2.setParameters(ledParameters2)
+                                LedShow2.setup(ledAddress2)
+                                ConfigManager.saveConfig(config)
+                            }
+                        } else {
+                            ledState2 = "网络地址错误"
+                        }
 
-                }
-                Button(onClick = {
-                    if (ledAddress1.isIpAddress()) {
-                        coroutineScope.launch(Dispatchers.IO) {
-                            LedShow.setParameters(ledParameters1)
-                            LedShow.setup(ledAddress1)
-                        }
-                    } else {
-                        ledState1 = "网络地址错误"
+                    }) {
+                        Text("设定LED2")
                     }
-                    if (ledAddress2.isIpAddress()) {
-                        coroutineScope.launch(Dispatchers.IO) {
-                            LedShow2.setParameters(ledParameters2)
-                            LedShow2.setup(ledAddress2)
-                        }
-                    } else {
-                        ledState2 = "网络地址错误"
-                    }
-                }) {
-                    Text("设定")
                 }
+
                 Spacer(modifier = Modifier.height(32.dp))
                 Row {
                     Text("今日接待", fontSize = 24.sp)
