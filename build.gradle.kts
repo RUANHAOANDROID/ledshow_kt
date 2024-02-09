@@ -38,6 +38,7 @@ kotlin {
                 implementation("io.ktor:ktor-server-host-common-jvm:2.3.7")
                 implementation("io.ktor:ktor-server-status-pages-jvm:2.3.7")
                 implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+                implementation("org.jetbrains.compose.material3:material3-desktop:1.2.1")
                 implementation(compose.desktop.currentOs)
             }
         }
