@@ -6,7 +6,7 @@ import java.io.File
 
 object ConfigManager {
     private const val CONFIG_FILE_PATH = "config.json" // or "config.yml" for YAML
-    private const val CONFIG_FILE_USER_PATH = "conf.json"
+    private const val CONFIG_FILE_USER_PATH = "config.json"
     fun loadConfig(): Config {
         val customConfig = File(CONFIG_FILE_USER_PATH)
         if (customConfig.exists()) {
@@ -22,6 +22,7 @@ object ConfigManager {
     }
 
     fun saveConfig(config: Config) {
+        val currentDirectory = System.getProperty("user.dir")
         val file = File(CONFIG_FILE_USER_PATH)
         if (!file.exists()) {
             file.createNewFile()
