@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 @Composable
 @Preview
 fun App() {
-    var maxCount by remember { mutableStateOf("100000") }
+    var maxCount by remember { mutableStateOf("1000") }
     var existsCount by remember { mutableStateOf("X") }
     var inCount by remember { mutableStateOf("X") }
     var ledState1 by remember { mutableStateOf("STATUS") }
