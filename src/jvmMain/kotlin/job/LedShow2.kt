@@ -61,8 +61,8 @@ object LedShow2 {
                 ledParameters.height,
                 screen.profile
             )
-            val page = TextBxPage("今日接待${inCount}人")
-            page.newLine("实时园内${existCount}人")
+            val page = TextBxPage("今日接待${inCount}")
+            page.newLine("实时园内${existCount}")
             //                    page.newLine("人")
             //            page.font = Font("宋体", Font.PLAIN, ledParameters.fontSize)
             page.displayStyle = styles[3]
@@ -130,8 +130,8 @@ object LedShow2 {
                 ledParameters.height,
                 screen.profile
             )
-            val page = TextBxPage("今日接待${inCount}人")
-            page.newLine("实时园内${existCount}人")
+            val page = TextBxPage("今日接待${inCount}")
+            page.newLine("实时在园${existCount}")
             area.addPage(page)
             screen.writeDynamic(rule, area)
         }.onSuccess {

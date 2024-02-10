@@ -120,7 +120,7 @@ fun App() {
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Row {
-                    Text("${"LED1:"}", fontSize = 28.sp)
+                    Text("${"东桥LED:"}", fontSize = 28.sp)
                     Text(ledState1, fontSize = 24.sp, color = Color.Red)
                 }
 
@@ -139,12 +139,12 @@ fun App() {
                             ledState1 = "网络地址错误"
                         }
                     }) {
-                        Text("LED1重连")
+                        Text("LED重连")
                     }
                 }
 
                 Row {
-                    Text("${"LED2:"}", fontSize = 28.sp)
+                    Text("${"西桥LED:"}", fontSize = 28.sp)
                     Text(ledState2, fontSize = 24.sp, color = Color.Red)
                 }
                 Row {
@@ -161,9 +161,8 @@ fun App() {
                         } else {
                             ledState2 = "网络地址错误"
                         }
-
                     }) {
-                        Text("LED2重连")
+                        Text("LED重连")
                     }
                 }
 
@@ -171,12 +170,10 @@ fun App() {
                 Row {
                     Text("今日接待", fontSize = 24.sp)
                     Text(inCount, fontSize = 24.sp, color = Color.Red)
-                    Text("人", fontSize = 24.sp)
                 }
                 Row {
                     Text("当前在园", fontSize = 24.sp)
                     Text(existsCount, fontSize = 24.sp, color = Color.Red)
-                    Text("人", fontSize = 24.sp)
                 }
                 Spacer(modifier = Modifier.height(32.dp))
                 Text("$runInfo", fontSize = 24.sp)
