@@ -6,9 +6,6 @@ plugins {
     kotlin("plugin.serialization") version "1.5.10"
 }
 
-group = "com.ledshow"
-version = "1.0-SNAPSHOT"
-
 repositories {
     google()
     mavenCentral()
@@ -54,7 +51,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             fromFiles(project.fileTree("libs/") { include("**/*.jar") })
             packageName = "ledshow"
-            packageVersion = "1.3.15"
+            packageVersion = "1.3.16"
             modules("java.sql")
             //jvmArgs += "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
         }
