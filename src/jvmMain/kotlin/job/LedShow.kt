@@ -16,40 +16,41 @@ import onbon.bx06.utils.DisplayStyleFactory
 
 class LedShow(var ledParameters: LedParameters) {
     var connected = false
+    var name = "LED"
     private var ip: String = "192.168.8.199"
     private var port: Int = 5005
     private val screen by lazy {
         Bx6GEnv.initial()
         Bx6GScreenClient("MyScreen", Bx6M())
     }
-
-    suspend fun connect(statusCall: (String) -> Unit): Boolean {
+    private var ledStatusCall: ((String) -> Unit)? = null
+    suspend fun connect(): Boolean {
         this.ip = ledParameters.ip
         this.port = ledParameters.port
         connected = screen.connect(ip, port)
-        statusCall(if (connected) "连接成功" else "连接失败")
+        ledStatusCall?.let { it(if (connected) "连接成功" else "连接失败") }
         return connected
     }
 
-    suspend fun reconnect(errCall: (String) -> Unit) {
-        errCall("正在重连.")
+    suspend fun reconnect() {
+        ledStatusCall?.let { it("正在重连.") }
         delay(500)
-        errCall("正在重连..")
+        ledStatusCall?.let { it("正在重连..") }
         delay(500)
-        errCall("正在重连...")
+        ledStatusCall?.let { it("正在重连...") }
         delay(500)
-        errCall("正在重连....")
+        ledStatusCall?.let { it("正在重连....") }
         delay(500)
         connected = screen.connect(ip, port)
         if (connected) {
-            errCall("连接成功")
+            ledStatusCall?.let { it("连接成功") }
         } else {
-            errCall("连接失败")
+            ledStatusCall?.let { it("连接失败") }
         }
     }
 
-    suspend fun setLedContent(existCount: Int, inCount: Int, errCall: (String) -> Unit) {
-        showDynamicArea(inCount, existCount, errCall)
+    suspend fun setLedContent(existCount: Int, inCount: Int) {
+        showDynamicArea(inCount, existCount)
         //showStaticArea(inCount, existCount, errCall)
         //showDynamicAreaTest(screen, existCount, inCount, errCall)
     }
@@ -93,7 +94,7 @@ class LedShow(var ledParameters: LedParameters) {
 //            errCall("${it.message}")
 //        }
 //    }
-    private suspend fun showDynamicArea(inCount: Int, existCount: Int, errCall: (String) -> Unit) {
+    private suspend fun showDynamicArea(inCount: Int, existCount: Int) {
         runCatching {
             val rule = DynamicBxAreaRule()
             rule.id = 0
@@ -111,19 +112,19 @@ class LedShow(var ledParameters: LedParameters) {
             area.addPage(page)
             screen.writeDynamic(rule, area)
         }.onSuccess {
-            errCall("设定显示内容成功")
+            ledStatusCall?.let { it1 -> it1("设定显示内容成功") }
             try {
                 val resultString = it.toString()
                 if (resultString.contains("断线")) {
                     disconnect()
-                    reconnect(errCall)
+                    reconnect()
                 }
-            }catch (e:Exception){
-                errCall("设定成功，解析LED返回失败")
+            } catch (e: Exception) {
+                ledStatusCall?.let { it1 -> it1("设定成功，解析LED返回失败") }
             }
         }.onFailure {
             //errCall("${it.message}")
-            errCall("设定显示内容失败")
+            ledStatusCall?.let { it1 -> it1("设定显示内容失败") }
         }
     }
 
@@ -183,7 +184,7 @@ class LedShow(var ledParameters: LedParameters) {
             errCall(resultString)
             if (resultString.contains("断线")) {
                 disconnect()
-                reconnect(errCall)
+                reconnect()
             }
         }.onFailure {
             errCall("${it.message}")
@@ -195,4 +196,7 @@ class LedShow(var ledParameters: LedParameters) {
         screen.disconnect()
     }
 
+    fun registerStatus(ledStatusCall: ((String) -> Unit)) {
+        this.ledStatusCall = ledStatusCall
+    }
 }
