@@ -112,7 +112,7 @@ fun App() {
                         Text("设定限额")
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 LazyColumn(
                     modifier = Modifier.defaultMinSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -146,7 +146,7 @@ fun App() {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Row {
                     Text("今日接待", fontSize = 24.sp)
                     Text(inCount, fontSize = 24.sp, color = Color.Red)

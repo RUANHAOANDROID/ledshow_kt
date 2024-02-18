@@ -15,13 +15,14 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import utils.getLocalIpv4Address
 
 class WebServer {
     private var dao: DAO = DAOImpl
     private val mutex = Mutex()
     suspend fun startServer(port: Int = 8080, callInfo: (String) -> Unit) {
         callInfo("startServer $port")
-        embeddedServer(Netty , port) {
+        embeddedServer(Netty, port) {
             callInfo("添加JSON序列化")
             install(ContentNegotiation) {
                 json()
@@ -41,14 +42,14 @@ class WebServer {
                     callInfo("Ping")
                     call.respond(RespSuccess(data = "pong"))
                 }
-                get("/canEnter"){
+                get("/canEnter") {
                     mutex.withLock {
-                        val maxCount =dao.getMaxCount()
-                        val existsCount  =dao.getExistCount()
-                        if (existsCount>=maxCount){
+                        val maxCount = dao.getMaxCount()
+                        val existsCount = dao.getExistCount()
+                        if (existsCount >= maxCount) {
                             callInfo("can enter NO!")
                             call.respond(HttpStatusCode.OK, RespSuccess(data = false))
-                        }else {
+                        } else {
                             callInfo("can enter YES! ")
                             call.respond(HttpStatusCode.OK, RespSuccess(data = true))
                         }
@@ -58,12 +59,12 @@ class WebServer {
                     val deviceId = call.parameters["id"]
                     val inOutType = call.parameters["type"]?.toInt()
                     mutex.withLock {
-                        val maxCount =dao.getMaxCount()
-                        val existsCount  =dao.getExistCount()
-                        if ((inOutType==0)&&(existsCount>=maxCount)){
+                        val maxCount = dao.getMaxCount()
+                        val existsCount = dao.getExistCount()
+                        if ((inOutType == 0) && (existsCount >= maxCount)) {
                             callInfo("can enter NO!")
                             call.respond(HttpStatusCode.OK, RespError(msg = "园区人数超限！"))
-                        }else{
+                        } else {
                             callInfo("pass gate ${deviceId} ${inOutType}")
                             if (deviceId == null || inOutType == null) {
                                 call.respond(HttpStatusCode.InternalServerError, RespError(msg = "参数错误"))
@@ -85,7 +86,7 @@ class WebServer {
                     val existCount = dao.getExistCount()
                     call.respond(HttpStatusCode.OK, RespSuccess(data = existCount))
                 }
-                callInfo("路由注册完毕,端口${port}")
+                callInfo("路由注册完毕\n服务地址：http://${"".getLocalIpv4Address()}:8080")
             }
         }.start(wait = true)
     }
