@@ -111,14 +111,19 @@ class LedShow(var ledParameters: LedParameters) {
             area.addPage(page)
             screen.writeDynamic(rule, area)
         }.onSuccess {
-            val resultString = it.toString()
-            errCall(resultString)
-            if (resultString.contains("断线")) {
-                disconnect()
-                reconnect(errCall)
+            errCall("设定显示内容成功")
+            try {
+                val resultString = it.toString()
+                if (resultString.contains("断线")) {
+                    disconnect()
+                    reconnect(errCall)
+                }
+            }catch (e:Exception){
+                errCall("设定成功，解析LED返回失败")
             }
         }.onFailure {
-            errCall("${it.message}")
+            //errCall("${it.message}")
+            errCall("设定显示内容失败")
         }
     }
 

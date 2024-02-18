@@ -29,40 +29,48 @@ fun App() {
     var ledState1 by remember { mutableStateOf("STATUS") }
     var ledState2 by remember { mutableStateOf("STATUS") }
     var runInfo by remember { mutableStateOf("") }
-    var ledAddress1 by remember { mutableStateOf("ipaddress") }
-    var ledAddress2 by remember { mutableStateOf("ipaddress") }
+
     var dao: DAO = DAOImpl
     val coroutineScope = rememberCoroutineScope()
     val config by lazy { ConfigManager.loadConfig() }
     val ledShow1 = LedShow(LedParameters())
     val ledShow2 = LedShow(LedParameters())
-    val ledDevices = remember { mutableStateOf<LedShow>(ledShow2) }
+    val ledDevices = remember { mutableListOf<LedShow>(ledShow2) }
+//    config.leds.forEach {
+//        val parameters = LedParameters().apply {
+//            ip = it.ip
+//            x = it.x
+//            y = it.y
+//            width = it.w
+//            height = it.h
+//            fontSize = it.fs
+//        }
+//        ledDevices.add(LedShow(parameters))
+//    }
     var counterJob: Job? = null
     // 启动后台任务
-
+    val led1 = config.leds[0]
+    with(ledShow1.ledParameters) {
+        ip = led1.ip
+        x = led1.x
+        y = led1.y
+        width = led1.w
+        height = led1.h
+        fontSize = led1.fs
+    }
+    val led2 = config.leds[1]
+    with(ledShow2.ledParameters) {
+        ip = led2.ip
+        x = led2.x
+        y = led2.y
+        width = led2.w
+        height = led2.h
+        fontSize = led2.fs
+    }
+    var ledAddress1 by remember { mutableStateOf(led1.ip) }
+    var ledAddress2 by remember { mutableStateOf(led2.ip) }
     DisposableEffect(Unit) {
-        val led1 = config.leds[0]
-        with(ledShow1.ledParameters) {
-            ip = led1.ip
-            x = led1.x
-            y = led1.y
-            width = led1.w
-            height = led1.y
-            fontSize = led1.fs
-        }
-        val led2 = config.leds[1]
-        with(ledShow2.ledParameters) {
-            ip = led2.ip
-            x = led2.x
-            y = led2.y
-            width = led2.w
-            height = led2.y
-            fontSize = led2.fs
-        }
-        ledAddress1 = led1.ip
-        ledAddress2 = led2.ip
         val webServerJob = coroutineScope.launch(Dispatchers.IO) {
-
             runInfo = "初始化数据库"
             dao.setup()
             maxCount = dao.getMaxCount().toString()
@@ -94,7 +102,7 @@ fun App() {
         counterJob = coroutineScope.launch(Dispatchers.Default) {
             while (true) {
                 //间歇1秒
-                delay(1000)
+                delay(2000)
                 var existCountDB = dao.getExistCount()
                 val inCountDB = dao.getInCount()
                 if (existCountDB < 0)
@@ -115,7 +123,7 @@ fun App() {
                         }
                     }
                 }
-                delay(4000)
+                delay(2000)
             }
         }
     }
@@ -165,7 +173,7 @@ fun App() {
                         Text("LED重连")
                     }
                 }
-
+                //Text("${ledShow1.ledParameters}")
                 Row {
                     Text("${config.leds[1].title}", fontSize = 28.sp)
                     Text(ledState2, fontSize = 24.sp, color = Color.Red)
@@ -189,7 +197,7 @@ fun App() {
                         Text("LED重连")
                     }
                 }
-
+                //Text("${ledShow1.ledParameters}")
                 Spacer(modifier = Modifier.height(32.dp))
                 Row {
                     Text("今日接待", fontSize = 24.sp)
