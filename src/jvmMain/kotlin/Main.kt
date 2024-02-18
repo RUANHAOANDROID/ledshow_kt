@@ -11,6 +11,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import data.db.DAO
 import data.db.DAOImpl
+import data.model.Config
+import data.model.LED
 import data.model.LedParameters
 import job.LedShow
 import job.WebServer
@@ -31,20 +33,36 @@ fun App() {
     var ledAddress2 by remember { mutableStateOf("ipaddress") }
     var dao: DAO = DAOImpl
     val coroutineScope = rememberCoroutineScope()
-    val ledParameters1 by remember { mutableStateOf(LedParameters()) }
-    val ledParameters2 by remember { mutableStateOf(LedParameters()) }
     val config by lazy { ConfigManager.loadConfig() }
-    val ledShow1 = LedShow(ledParameters1)
-    val ledShow2 = LedShow(ledParameters2)
+    val ledShow1 = LedShow(LedParameters())
+    val ledShow2 = LedShow(LedParameters())
     val ledDevices = remember { mutableStateOf<LedShow>(ledShow2) }
     var counterJob: Job? = null
     // 启动后台任务
+
     DisposableEffect(Unit) {
+        val led1 = config.leds[0]
+        with(ledShow1.ledParameters) {
+            ip = led1.ip
+            x = led1.x
+            y = led1.y
+            width = led1.w
+            height = led1.y
+            fontSize = led1.fs
+        }
+        val led2 = config.leds[1]
+        with(ledShow2.ledParameters) {
+            ip = led2.ip
+            x = led2.x
+            y = led2.y
+            width = led2.w
+            height = led2.y
+            fontSize = led2.fs
+        }
+        ledAddress1 = led1.ip
+        ledAddress2 = led2.ip
         val webServerJob = coroutineScope.launch(Dispatchers.IO) {
-            ledAddress1 = config.leds[0].ip
-            ledAddress2 = config.leds[1].ip
-            ledShow1.ledParameters.ip = ledAddress1
-            ledShow2.ledParameters.ip = ledAddress2
+
             runInfo = "初始化数据库"
             dao.setup()
             maxCount = dao.getMaxCount().toString()
@@ -76,7 +94,7 @@ fun App() {
         counterJob = coroutineScope.launch(Dispatchers.Default) {
             while (true) {
                 //间歇1秒
-                delay(2000)
+                delay(1000)
                 var existCountDB = dao.getExistCount()
                 val inCountDB = dao.getInCount()
                 if (existCountDB < 0)
@@ -97,6 +115,7 @@ fun App() {
                         }
                     }
                 }
+                delay(4000)
             }
         }
     }
@@ -184,6 +203,38 @@ fun App() {
                 Text("$runInfo", fontSize = 24.sp)
             }
         }
+    }
+}
+
+@Composable
+fun LedItem(led: LED, status: String, ledShow: LedShow, coroutineScope: CoroutineScope) {
+    var ledIp = remember { led.ip }
+    var status = remember { status }
+    Column {
+        Row {
+            Text(led.title, fontSize = 28.sp)
+            Text(status, fontSize = 24.sp, color = Color.Red)
+        }
+        Row {
+            OutlinedTextField(ledIp, onValueChange = { inputAddr ->
+                ledIp = inputAddr
+            }, label = { Text("IP address") }, modifier = Modifier.width(180.dp))
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(onClick = {
+                if (ledIp.isIpAddress()) {
+                    coroutineScope.launch() {
+                        ledShow.reconnect {
+                            status = it
+                        }
+                    }
+                } else {
+                    status = "网络地址错误"
+                }
+            }) {
+                Text("LED重连")
+            }
+        }
+
     }
 }
 
