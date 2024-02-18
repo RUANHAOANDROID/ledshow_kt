@@ -120,7 +120,7 @@ fun App() {
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Row {
-                    Text("${"LED1:"}", fontSize = 28.sp)
+                    Text("${"东桥LED:"}", fontSize = 28.sp)
                     Text(ledState1, fontSize = 24.sp, color = Color.Red)
                 }
 
@@ -144,7 +144,7 @@ fun App() {
                 }
 
                 Row {
-                    Text("${"LED2:"}", fontSize = 28.sp)
+                    Text("${"西桥LED:"}", fontSize = 28.sp)
                     Text(ledState2, fontSize = 24.sp, color = Color.Red)
                 }
                 Row {
