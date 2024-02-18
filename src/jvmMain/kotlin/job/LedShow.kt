@@ -42,6 +42,7 @@ class LedShow(var ledParameters: LedParameters) {
         ledStatusCall?.let { it("正在重连....") }
         delay(500)
         connected = screen.connect(ip, port)
+        ledStatusCall?.let { it("正在重连.....") }
         if (connected) {
             ledStatusCall?.let { it("连接成功") }
         } else {
