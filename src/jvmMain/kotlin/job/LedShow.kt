@@ -116,6 +116,7 @@ class LedShow(var ledParameters: LedParameters) {
             ledStatusCall?.let { it1 -> it1("设定显示内容成功") }
             try {
                 val resultString = it.toString()
+                ledStatusCall?.let { it1 -> it1("$resultString") }
                 if (resultString.contains("断线")) {
                     disconnect()
                     reconnect()
