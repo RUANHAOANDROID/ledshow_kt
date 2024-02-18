@@ -13,10 +13,10 @@ import data.db.DAO
 import data.db.DAOImpl
 import data.model.LedParameters
 import job.LedShow
-import job.LedShow2
 import job.WebServer
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import utils.isIpAddress
+import javax.swing.JOptionPane
 
 @Composable
 @Preview
@@ -34,12 +34,17 @@ fun App() {
     val ledParameters1 by remember { mutableStateOf(LedParameters()) }
     val ledParameters2 by remember { mutableStateOf(LedParameters()) }
     val config by lazy { ConfigManager.loadConfig() }
-
+    val ledShow1 = LedShow(ledParameters1)
+    val ledShow2 = LedShow(ledParameters2)
+    val ledDevices = remember { mutableStateOf<LedShow>(ledShow2) }
+    var counterJob: Job? = null
     // 启动后台任务
     DisposableEffect(Unit) {
         val webServerJob = coroutineScope.launch(Dispatchers.IO) {
-            ledAddress1=config.ledIp1
-            ledAddress2=config.ledIp2
+            ledAddress1 = config.leds[0].ip
+            ledAddress2 = config.leds[1].ip
+            ledShow1.ledParameters.ip = ledAddress1
+            ledShow2.ledParameters.ip = ledAddress2
             runInfo = "初始化数据库"
             dao.setup()
             maxCount = dao.getMaxCount().toString()
@@ -49,52 +54,52 @@ fun App() {
                 runInfo = it
             }
         }
-
-        val ledJob1 = coroutineScope.launch(Dispatchers.Default) {
-            runCatching {
-                ledState1 = "初始化连接"
-                if (LedShow.setup(ledAddress1)) {
-                    ledState1 = "连接成功"
-                } else {
-                    ledState1 = "连接失败"
-                }
-                LedShow.start(countCall = { e, i ->
-                    existsCount = e
-                    inCount = i
-                }, errCall = {
-                    ledState1 = it
-                })
-            }.onFailure {
-                ledState1 = "发生异常: ${it.localizedMessage}"
-            }
-            webServerJob.join()
-        }
-        val ledJob2 = coroutineScope.launch(Dispatchers.Default) {
-            runCatching {
-                ledState2 = "初始化连接"
-                if (LedShow2.setup(ledAddress2)) {
-                    ledState2 = "连接成功"
-                } else {
-                    ledState2 = "连接失败"
-                }
-                LedShow2.start(countCall = { e, i ->
-                    existsCount = e
-                    inCount = i
-                }, errCall = {
-                    ledState2 = it
-                })
-            }.onFailure {
-                ledState2 = "发生异常: ${it.localizedMessage}"
-            }
-            webServerJob.join()
-        }
         onDispose {
             webServerJob.cancel()
-            ledJob1.cancel()
-            ledJob2.cancel()
+            counterJob?.cancel()
+            coroutineScope.cancel()
         }
     }
-
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            with(ledShow1) {
+                connect {
+                    ledState1 = it
+                }
+            }
+            with(ledShow2) {
+                connect {
+                    ledState2 = it
+                }
+            }
+        }
+        counterJob = coroutineScope.launch(Dispatchers.Default) {
+            while (true) {
+                //间歇1秒
+                delay(2000)
+                var existCountDB = dao.getExistCount()
+                val inCountDB = dao.getInCount()
+                if (existCountDB < 0)
+                    existCountDB = 0
+                existsCount = existCountDB.toString()
+                inCount = inCountDB.toString()
+                with(ledShow1) {
+                    if (connected) {
+                        setLedContent(existCountDB, inCountDB) {
+                            ledState1 = it
+                        }
+                    }
+                }
+                with(ledShow2) {
+                    if (connected) {
+                        setLedContent(existCountDB, inCountDB) {
+                            ledState2 = it
+                        }
+                    }
+                }
+            }
+        }
+    }
     MaterialTheme {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -120,7 +125,7 @@ fun App() {
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Row {
-                    Text("${"东桥LED:"}", fontSize = 28.sp)
+                    Text("${config.leds[0].title}", fontSize = 28.sp)
                     Text(ledState1, fontSize = 24.sp, color = Color.Red)
                 }
 
@@ -131,9 +136,8 @@ fun App() {
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(onClick = {
                         if (ledAddress1.isIpAddress()) {
-                            coroutineScope.launch(Dispatchers.IO) {
-                                LedShow.setParameters(ledParameters1)
-                                LedShow.setup(ledAddress1)
+                            coroutineScope.launch {
+                                ledShow1.reconnect { ledState1 = it }
                             }
                         } else {
                             ledState1 = "网络地址错误"
@@ -144,7 +148,7 @@ fun App() {
                 }
 
                 Row {
-                    Text("${"西桥LED:"}", fontSize = 28.sp)
+                    Text("${config.leds[1].title}", fontSize = 28.sp)
                     Text(ledState2, fontSize = 24.sp, color = Color.Red)
                 }
                 Row {
@@ -154,9 +158,10 @@ fun App() {
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(onClick = {
                         if (ledAddress2.isIpAddress()) {
-                            coroutineScope.launch(Dispatchers.IO) {
-                                LedShow2.setParameters(ledParameters2)
-                                LedShow2.setup(ledAddress2)
+                            coroutineScope.launch() {
+                                ledShow2.reconnect {
+                                    ledState2 = it
+                                }
                             }
                         } else {
                             ledState2 = "网络地址错误"
@@ -182,15 +187,16 @@ fun App() {
     }
 }
 
+//exitApplication
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
+    var shouldExit by remember { mutableStateOf(false) }
+    Window(onCloseRequest = {
+        val result = JOptionPane.showConfirmDialog(null, "是否需要关闭该程序?", "确认关闭", JOptionPane.YES_NO_OPTION)
+        if (result == JOptionPane.YES_OPTION) {
+            shouldExit = true
+            exitApplication()
+        }
+    }) {
         App()
     }
-}
-
-fun String.isIpAddress(): Boolean {
-    val ipAddressRegex =
-        """^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$""".toRegex()
-
-    return ipAddressRegex.matches(this)
 }

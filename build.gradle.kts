@@ -36,6 +36,8 @@ kotlin {
                 implementation("io.ktor:ktor-server-status-pages-jvm:2.3.7")
                 implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
                 implementation("org.jetbrains.compose.material3:material3-desktop:1.2.1")
+//                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3")
+//                implementation("io.github.oshai:kotlin-logging-jvm:6.0.3")
                 implementation(compose.desktop.currentOs)
             }
         }

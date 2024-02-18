@@ -1,8 +1,6 @@
 import androidx.compose.ui.res.useResource
 import data.model.Config
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.io.File
 
 object ConfigManager {
     private const val CONFIG_FILE_PATH = "config.json" // or "config.yml" for YAML

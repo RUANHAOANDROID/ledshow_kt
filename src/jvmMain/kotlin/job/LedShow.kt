@@ -14,41 +14,115 @@ import onbon.bx06.file.ProgramBxFile
 import onbon.bx06.series.Bx6M
 import onbon.bx06.utils.DisplayStyleFactory
 
-object LedShow {
-    private val dao: DAO = DAOImpl
-    private var connected = false
-    private var ledParameters = LedParameters()
+class LedShow(var ledParameters: LedParameters) {
+    var connected = false
+    private var ip: String = "192.168.8.199"
+    private var port: Int = 5005
     private val screen by lazy {
         Bx6GEnv.initial()
         Bx6GScreenClient("MyScreen", Bx6M())
     }
 
-    suspend fun setup(ip: String = "192.168.8.199", port: Int = 5005): Boolean {
+    suspend fun connect(statusCall: (String) -> Unit): Boolean {
+        this.ip = ledParameters.ip
+        this.port = ledParameters.port
         connected = screen.connect(ip, port)
+        statusCall(if (connected) "连接成功" else "连接失败")
         return connected
     }
 
-    suspend fun start(countCall: (String, String) -> Unit, errCall: (String) -> Unit) {
-        while (true) {
-            //间歇1秒
-            delay(1000)
-            var existCount = dao.getExistCount()
-            val inCount = dao.getInCount()
-            if (existCount<0)
-                existCount=0
-            countCall("${existCount}", "${inCount}")
-            if (connected) {
-                setLedContent(existCount, inCount, errCall)
-            }
+    suspend fun reconnect(errCall: (String) -> Unit) {
+        errCall("正在重连.")
+        delay(500)
+        errCall("正在重连..")
+        delay(500)
+        errCall("正在重连...")
+        delay(500)
+        errCall("正在重连....")
+        delay(500)
+        connected = screen.connect(ip, port)
+        if (connected) {
+            errCall("连接成功")
+        } else {
+            errCall("连接失败")
         }
     }
 
-    private fun setLedContent(existCount: Int, inCount: Int, errCall: (String) -> Unit) {
+    suspend fun setLedContent(existCount: Int, inCount: Int, errCall: (String) -> Unit) {
         showDynamicArea(inCount, existCount, errCall)
         //showStaticArea(inCount, existCount, errCall)
+        //showDynamicAreaTest(screen, existCount, inCount, errCall)
     }
 
-    private fun showStaticArea(inCount: Int, existCount: Int, errCall: (String) -> Unit) {
+
+    //    private fun showDynamicArea(inCount: Int, existCount: Int, errCall: (String) -> Unit) {
+//        runCatching {
+//            val rule = DynamicBxAreaRule()
+//            rule.id = 0
+//            rule.immediatePlay = 1.toByte()
+//            rule.runMode = 0.toByte()
+//            val area = DynamicBxArea(
+//                ledParameters.x,
+//                ledParameters.y,
+//                ledParameters.width,
+//                ledParameters.height/2,
+//                screen.profile
+//            )
+//            val page = TextBxPage("今日接待${inCount}人")
+//            //page.newLine("实时园内${existCount}人")
+//            area.addPage(page)
+//            screen.writeDynamic(rule, area)
+//
+//            val rule2 = DynamicBxAreaRule()
+//            rule.id = 1
+//            rule.immediatePlay = 1.toByte()
+//            rule.runMode = 0.toByte()
+//            val area2 = DynamicBxArea(
+//                ledParameters.x,
+//                ledParameters.height/2,
+//                ledParameters.width,
+//                ledParameters.height/2,
+//                screen.profile
+//            )
+//            val page2 = TextBxPage("实时园内${existCount}人")
+//            area2.addPage(page2)
+//            screen.writeDynamic(rule2, area2)
+//        }.onSuccess {
+//            errCall("设定成功")
+//        }.onFailure {
+//            errCall("${it.message}")
+//        }
+//    }
+    private suspend fun showDynamicArea(inCount: Int, existCount: Int, errCall: (String) -> Unit) {
+        runCatching {
+            val rule = DynamicBxAreaRule()
+            rule.id = 0
+            rule.immediatePlay = 1.toByte()
+            rule.runMode = 0.toByte()
+            val area = DynamicBxArea(
+                ledParameters.x,
+                ledParameters.y,
+                ledParameters.width,
+                ledParameters.height,
+                screen.profile
+            )
+            val page = TextBxPage("今日接待${inCount}")
+            page.newLine("实时在园${existCount}")
+            area.addPage(page)
+            screen.writeDynamic(rule, area)
+        }.onSuccess {
+            val resultString = it.toString()
+            errCall(resultString)
+            if (resultString.contains("断线")) {
+                disconnect()
+                reconnect(errCall)
+            }
+        }.onFailure {
+            errCall("${it.message}")
+        }
+    }
+
+    suspend fun showStaticArea(inCount: Int, existCount: Int, errCall: (String) -> Unit) {
         try {
             //screen.turnOn()
             val styles: List<DisplayStyleFactory.DisplayStyle> = DisplayStyleFactory.getStyles().toList()
@@ -61,7 +135,7 @@ object LedShow {
                 screen.profile
             )
             val page = TextBxPage("今日接待${inCount}")
-            page.newLine("实时在园${existCount}")
+            page.newLine("实时园内${existCount}")
             //                    page.newLine("人")
             //            page.font = Font("宋体", Font.PLAIN, ledParameters.fontSize)
             page.displayStyle = styles[3]
@@ -78,78 +152,41 @@ object LedShow {
         }
     }
 
-//    private fun showDynamicArea(inCount: Int, existCount: Int, errCall: (String) -> Unit) {
-//        runCatching {
-//            val rule = DynamicBxAreaRule()
-//            rule.id = 0
-//            rule.immediatePlay = 1.toByte()
-//            rule.runMode = 0.toByte()
-//            val area = DynamicBxArea(
-//                ledParameters.x,
-//                ledParameters.y,
-//                ledParameters.width,
-//                ledParameters.height / 2,
-//                screen.profile
-//            )
-//            val page = TextBxPage("今日接待${inCount}人")
-//            //page.newLine("实时园内${existCount}人")
-//            area.addPage(page)
-//            screen.writeDynamic(rule, area)
-//
-//            val rule2 = DynamicBxAreaRule()
-//            rule.id = 1
-//            rule.immediatePlay = 1.toByte()
-//            rule.runMode = 0.toByte()
-//            val area2 = DynamicBxArea(
-//                ledParameters.x,
-//                ledParameters.height / 2,
-//                ledParameters.width,
-//                ledParameters.height / 2,
-//                screen.profile
-//            )
-//            val page2 = TextBxPage("实时园内${existCount}人")
-//            area2.addPage(page2)
-//            screen.writeDynamic(rule2, area2)
-//        }.onSuccess {
-//            errCall("设定成功")
-//        }.onFailure {
-//            errCall("${it.message}")
-//        }
-//    }
-    private fun showDynamicArea(inCount: Int, existCount: Int, errCall: (String) -> Unit) {
+    suspend fun LedShow.showDynamicAreaTest(
+        screen: Bx6GScreenClient,
+        inCount: Int,
+        existCount: Int,
+        errCall: (String) -> Unit
+    ) {
         runCatching {
             val rule = DynamicBxAreaRule()
             rule.id = 0
             rule.immediatePlay = 1.toByte()
             rule.runMode = 0.toByte()
             val area = DynamicBxArea(
-                ledParameters.x,
-                ledParameters.y,
-                ledParameters.width,
-                ledParameters.height,
+                0,
+                0,
+                32,
+                16,
                 screen.profile
             )
-            val page = TextBxPage("今日接待${inCount}")
-            page.newLine("实时园内${existCount}")
+            val page = TextBxPage("${inCount}")
             area.addPage(page)
             screen.writeDynamic(rule, area)
         }.onSuccess {
-            errCall("设定成功")
+            val resultString = it.toString()
+            errCall(resultString)
+            if (resultString.contains("断线")) {
+                disconnect()
+                reconnect(errCall)
+            }
         }.onFailure {
             errCall("${it.message}")
         }
     }
 
-
-    fun setParameters(ledParameters: LedParameters) {
-        this.ledParameters = ledParameters
-    }
-
-    fun show(text: String) {
-
-    }
-
-    fun stop() {
+    fun disconnect() {
+        connected = false
         screen.disconnect()
     }
 
