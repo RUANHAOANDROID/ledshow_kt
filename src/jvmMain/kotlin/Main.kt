@@ -72,7 +72,7 @@ fun App() {
         counterJob = coroutineScope.launch(Dispatchers.Default) {
             while (true) {
                 //间歇1秒
-                delay(2000)
+                delay(1000)
                 var existCountDB = dao.getExistCount()
                 val inCountDB = dao.getInCount()
                 if (existCountDB < 0)
@@ -86,7 +86,7 @@ fun App() {
                         }
                     }
                 }
-                delay(2000)
+                delay(1000)
             }
         }
     }

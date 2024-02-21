@@ -17,6 +17,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import utils.getLocalIpv4Address
 
+val IN = 0
+val OUT = 1
+
 class WebServer {
     private var dao: DAO = DAOImpl
     private val mutex = Mutex()
@@ -61,13 +64,17 @@ class WebServer {
                     mutex.withLock {
                         val maxCount = dao.getMaxCount()
                         val existsCount = dao.getExistCount()
-                        if ((inOutType == 0) && (existsCount >= maxCount)) {
+                        if ((inOutType == IN) && (existsCount >= maxCount)) {
                             callInfo("can enter NO!")
                             call.respond(HttpStatusCode.OK, RespError(msg = "园区人数超限！"))
                         } else {
                             callInfo("pass gate ${deviceId} ${inOutType}")
                             if (deviceId == null || inOutType == null) {
                                 call.respond(HttpStatusCode.InternalServerError, RespError(msg = "参数错误"))
+                            }
+                            if ((existsCount <= 0 )&& (inOutType == OUT)) {
+                                call.respond(HttpStatusCode.OK, RespSuccess())
+                                return@get
                             }
                             dao.addCount(deviceId!!, inOutType!!)
                             call.respond(HttpStatusCode.OK, RespSuccess())
