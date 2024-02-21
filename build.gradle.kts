@@ -53,7 +53,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             fromFiles(project.fileTree("libs/") { include("**/*.jar") })
             packageName = "ledshow"
-            packageVersion = "1.3.20"
+            packageVersion = "1.3.21"
             modules("java.sql")
             //jvmArgs += "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
         }
